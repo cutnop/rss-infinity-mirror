@@ -1,13 +1,8 @@
-#summary One-sentence summary of this page.
+= Goal =
 
-= Introduction =
-
-Add your content here.
+My Goal was to create an infinity mirror with a led matrix that would display various news headlines. and by touching the mirror, you can change the news feed.
 
 
-= Details =
+= Issues =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Not really an issue, but the code allocates 62 chars for each headline. So if a headline is really long, it may be cutoff when trying to read it on the display.
