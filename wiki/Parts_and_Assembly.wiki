@@ -1,13 +1,26 @@
-#summary One-sentence summary of this page.
-
-= Introduction =
-
-Add your content here.
 
 
-= Details =
+= Parts =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+ * Large floating Picture frame (uses two pieces of glass to hold pictures)
+ * Mirror tint for windows (and tools to apply it)
+ * Four Maxim Max7221 chips
+ * Four LED matrices compatible with the MAX7221 chip 
+ * Large perf-board to accommodate the width of the 4 LED matrices and Max chips.
+ * 3/4 wooded square rod (enough to build a rectangular space between the two pieces of glass and a inner perimeter of 40 inches)
+ * Arduino Uno
+ * Super glue
+ * Lots of wire
+ * Four resistors that are capable of controlling your LED matrix with the Max 7221 chip
+ * Four force sensors
+ * One meter addressable LED strip
+
+
+= Assembly =
+
+ # Solder the four matrices, resistors, and Max7221 chips together on the perf-board. (ZIP chips can be used if you think you might reuse the Max chips in the future)
+ # Apply the Mirror tint to the two pieces of glass
+ # Build a rectangular frame with a inner perimeter of one meter 
+ # Glue the LED strip to the inside of the frame
+ # Sandwich the frame between the two pieces of glass
+ # 
