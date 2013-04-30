@@ -1,4 +1,4 @@
-
+----
 = Arduino Code =
 {{{
 #include "LedControl.h"
@@ -267,4 +267,119 @@ void scroll()
   }
 }
 }}}
-= Details =
+
+----
+= Processing Code =
+{{{
+import processing.serial.*;
+import simpleML.*;
+
+int prvMode; //stores the privious mode
+
+//Different RSS feeds
+String theVerge = "http://www.theverge.com/rss/index.xml";
+String polygon = "http://www.polygon.com/rss/index.xml";
+
+Serial port;
+int mode = 0; //current mode
+int counter = 1; //counter for which heading to display
+String myString = null; //stores the heading
+int lf = 10;    // Linefeed in ASCII
+XMLRequest xmlRequest;
+String[] headlines = {
+  "", "", "", "", "", "", "", "", "", ""
+};
+
+void setup() 
+{
+  port = new Serial(this, Serial.list()[0], 9600);// change to correct com port(0) which is displayed by the previous line
+  port.clear();
+  port.bufferUntil('\n');
+
+  // Throw out the first reading, in case we started reading 
+  // in the middle of a string from the sender.
+  myString = port.readStringUntil(lf);
+  myString = null;
+
+  // Creating and starting the request
+  xmlRequest = new XMLRequest(this, theVerge);
+  xmlRequest.makeRequest();
+}
+void draw() 
+{
+  prvMode = mode;
+
+//recives the mode from arduino
+  while (port.available () > 0) 
+  {
+    myString = port.readStringUntil(lf);
+    if (myString != null) 
+    {
+      myString = trim(myString);
+      mode = int(myString);
+    }
+  }
+  if (port.available()<0)
+    mode = -1;
+
+//change the rss feed depending on the mode
+  if (mode == 0 && counter ==0)
+    xmlRequest = new XMLRequest(this, theVerge);
+  else if (mode == 1 && counter ==0)
+    xmlRequest = new XMLRequest(this, polygon);
+
+  //only 62 chars at a time
+  if ((headlines[counter] != null) && (headlines[counter] != ""))
+  {
+    if ((mode == 0) || (mode == 1))
+    {
+      xmlRequest.makeRequest();
+      if (headlines[counter].length() > 59)
+      {
+        println(headlines[counter]);//print headline on the computer
+        port.write("-");
+        //port.write(headlines[counter]);
+        port.write(headlines[counter].substring(0, 60));
+        port.write(headlines[counter].substring(60));
+        port.write("-");
+        //delay when to send next headline
+        delay(int(0.5*(headlines[counter].length()-60))*1000);
+      }
+      else
+      {
+        println(headlines[counter]); //print headline on the computer
+        port.write("-");
+        port.write(headlines[counter]);
+        port.write("-");
+        //delay when to send next headline
+        delay(int(0.5*(headlines[counter].length()))*1000);
+      }
+      counter++; //increment the counter that chooes which headline to diaplay
+      
+      //listen again, if the current mode is not equal to the previous
+      //reset the counter
+      while (port.available () > 0) 
+      {
+        myString = port.readStringUntil(lf);
+        if (myString != null) 
+        {
+          myString = trim(myString);
+          mode = int(myString);
+        }
+      }
+      if (counter >= headlines.length || mode != prvMode)
+        counter = 0;
+    }
+  }
+
+  println(mode); //prints the curront mode on the computer
+}
+
+// When the request is complete
+void netEvent(XMLRequest ml) 
+{
+  // Retrieving an array of all XML elements inside "<title*>" tags
+  headlines = ml.getElementArray("title");
+}
+
+}}}
