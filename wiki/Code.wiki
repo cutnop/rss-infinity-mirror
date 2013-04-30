@@ -1,5 +1,4 @@
 
-
 = Arduino Code =
 {{{
 #include "LedControl.h"
@@ -101,9 +100,6 @@ void loop()
   index = 0;
   inData[0] = '/0';
 }
-
-
-
 
 
 
