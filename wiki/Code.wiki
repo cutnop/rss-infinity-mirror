@@ -292,7 +292,8 @@ String[] headlines = {
 
 void setup() 
 {
-  port = new Serial(this, Serial.list()[0], 9600);// change to correct com port(0) which is displayed by the previous line
+// change to correct com port(0) which is displayed by the previous line
+  port = new Serial(this, Serial.list()[0], 9600);
   port.clear();
   port.bufferUntil('\n');
 
