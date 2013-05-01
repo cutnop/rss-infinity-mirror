@@ -16,4 +16,6 @@ https://rss-infinity-mirror.googlecode.com/files/20130430_154109.jpg
 
 https://rss-infinity-mirror.googlecode.com/files/20130430_154113.jpg
 
-<wiki:video url="http://www.youtube.com/watch?v=GlXSaDQILwQ"/> <wiki:video url="http://www.youtube.com/watch?v=pln8pQrWISc"/>
+<wiki:video url="http://www.youtube.com/watch?v=GlXSaDQILwQ"/> 
+
+<wiki:video url="http://www.youtube.com/watch?v=pln8pQrWISc"/>
