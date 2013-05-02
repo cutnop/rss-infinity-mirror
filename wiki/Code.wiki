@@ -228,9 +228,8 @@ void scroll()
   {
     letterOrigin[i]= (i+(numberOfMAXchips * 8) - 1)+(5*i); //places origin 1+5 spaces after the previous
   }
-  //keep shifting till the origin of the last letter is -8
+  //keep shifting till the origin of the last letter is -6
   //this insures that all letters scroll off the matrix
-  //(only applys if you are using one 8x8 matrix)
   while(letterOrigin[message.length()-1] > -6) //while the origin of the last char is greater than the
     // negative of the width of a char, continue to scroll
   {
