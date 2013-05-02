@@ -1,6 +1,8 @@
 ----
 = Arduino Code =
-[https://rss-infinity-mirror.googlecode.com/files/ToInfinityAndRSS.rar Download Code Here]
+*[https://rss-infinity-mirror.googlecode.com/files/ToInfinityAndRSS.rar Download Code Here]*
+
+*[https://rss-infinity-mirror.googlecode.com/files/libraries.rar Download Required Libraries Here]*
 {{{
 #include "LedControl.h"
 #include "LPD8806.h"
@@ -272,7 +274,7 @@ void scroll()
 ----
 = Processing Code =
 
-[https://code.google.com/p/rss-infinity-mirror/downloads/detail?name=toInfinityandRSS.rar&can=2&q= Download Code Here]
+[https://rss-infinity-mirror.googlecode.com/files/toInfinityandRSS.rar Download Code Here]
 {{{
 import processing.serial.*;
 import simpleML.*;
