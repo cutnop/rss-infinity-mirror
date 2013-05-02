@@ -1,4 +1,6 @@
- * [Introduction]
- * [Parts_and_Assembly]
- * [Code]
- * [PICTURES]
+ * *[Introduction]*
+ * *[Parts_and_Assembly]*
+ * *[Code]*
+ * *[PICTURES]*
+
+<g:plusone size="medium"></g:plusone>
