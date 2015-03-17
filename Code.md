@@ -1,0 +1,391 @@
+# Arduino Code #
+**[Download Code Here](https://rss-infinity-mirror.googlecode.com/files/ToInfinityAndRSS.rar)**
+
+**[Download Required Libraries Here](https://rss-infinity-mirror.googlecode.com/files/libraries.rar)**
+```
+#include "LedControl.h"
+#include "LPD8806.h"
+#include "SPI.h"
+/////////////////////////////////////////////////////
+//allocates memory for the maximum string length
+#define maxStringLength 200
+/*
+  MAX7219/7221 control
+ Pin 10 = Digital In
+ Pin  9 = Clock
+ pin  8 = Load
+ 2 = number of MAX chips being used
+ */
+#define DinPIN 10
+#define clockPIN 9
+#define loadPIN 8
+#define numberOfMAXchips 4
+///////////////////////////////////////////////////////
+
+#define maxMode 1 //maxMode +1 == number of rss feeds
+
+//Led strip pins
+int nLEDs = 32;
+int dataPin  = 4;
+int clockPin = 5;
+LPD8806 strip = LPD8806(nLEDs, dataPin, clockPin);
+
+///////////////////////////////////////////////////
+volatile int mode = 0; //current mode that can be changes
+                       //with an interupt from the button press
+
+//////////////////////////////////////////////////
+#define charLen 200
+char inData[charLen]; //allocates memory for the string to be recived from processing
+char inChar = -1;
+int index =0;
+
+String message; //message will hold the string to display
+LedControl lc=LedControl(DinPIN,clockPIN,loadPIN,numberOfMAXchips);
+int messageIndex; //keeps track of what char is or going to be displayed
+int msglength = message.length();
+byte LEDMatrix[maxStringLength][6]; //holds the byte matrix of the leds that will be used for each char
+int displayNum = 0; //current display to use
+int brightness = 15; //brightness for the led matrix (0 - 15) 
+
+int delaytime = 45; // wait before shifting words one pixel
+/////////////////////////////////////////////////////
+void setup() 
+{
+  //inturrupt code and do the modeup() when the button is pressed
+  attachInterrupt(0, modeup, FALLING); 
+  
+  // Start up the LED strip
+  strip.begin();
+
+  // Update the strip, to start they are all 'off'
+  strip.show();
+
+  lc.shutdown(0,false);  //Wake a MAX chip for use
+  lc.shutdown(1,false);
+  lc.shutdown(2,false);
+  lc.shutdown(3,false);
+  lc.setIntensity(0,brightness); //set the brightness
+  lc.setIntensity(1,brightness);
+  lc.setIntensity(2,brightness);
+  lc.setIntensity(3,brightness);
+  lc.clearDisplay(0);    //Clear the chip of bits (just incase)
+
+  Serial.begin(9600); // open serial to talk to processing
+  Serial.write(mode);
+}
+
+
+void loop() 
+{ 
+  rainbow(0); //Have the led strip cycle through the rainbow
+             // of colors before the next news headline scrolls across the matrix
+
+  Serial.println(mode); //Send processing the current mode
+  while(Serial.available() > 0) //read in chars from processing
+  {
+    if(index < charLen-1)
+    {
+      inChar = Serial.read();
+      inData[index] = inChar;
+      index++;
+      inData[index] = '\0';
+    }
+  }
+  ///////////////////////////
+  message = inData;            //store the char array into a string
+  LEDMatrixBytes(LEDMatrix);   //determin the byte matrix for each letter in the string
+  scroll();  //scroll the message
+
+ //reset values
+  message = ""; 
+  index = 0;
+  inData[0] = '/0';
+}
+
+
+
+//Interrupts code when button is pressed and increments the mode
+void modeup()
+{
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200) 
+  {
+    mode++;
+  }
+  last_interrupt_time = interrupt_time;
+}
+
+
+
+
+//Cycle through the raindow of colors on the led strip
+void rainbow(uint8_t wait) {
+  int i, j;
+
+  for (j=0; j < 384; j++) {     // 3 cycles of all 384 colors in the wheel
+    for (i=0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel( (i + j) % 384));
+    }  
+    strip.show();   // write all the pixels out
+    delay(wait);
+  }
+}
+
+//Helper for rainbow() to calculate colors
+uint32_t Wheel(uint16_t WheelPos)
+{
+  byte r, g, b;
+  switch(WheelPos / 128)
+  {
+  case 0:
+    r = 127 - WheelPos % 128;   //Red down
+    g = WheelPos % 128;      // Green up
+    b = 0;                  //blue off
+    break; 
+  case 1:
+    g = 127 - WheelPos % 128;  //green down
+    b = WheelPos % 128;      //blue up
+    r = 0;                  //red off
+    break; 
+  case 2:
+    b = 127 - WheelPos % 128;  //blue down 
+    r = WheelPos % 128;      //red up
+    g = 0;                  //green off
+    break; 
+  }
+  return(strip.Color(r,g,b));
+}
+
+
+/*
+detrimine's and stores the bytes that will light the matrix to display a char
+ */
+void LEDMatrixBytes(byte pLEDMatrix[maxStringLength][6])
+{
+  msglength = message.length();
+  byte letter[6];
+  for(int i=0; i<msglength; i++)
+  {
+    LEDcolumns(letter, message.charAt(messageIndex));
+    messageIndex++;
+    for(int j=0; j<6; j++)
+    {
+      pLEDMatrix[i][j] = letter[j];
+    }
+  }
+  messageIndex = 0;
+}
+
+/*
+helps LEDMatrixBytes by defining the array of bytes to send
+ for a partictular char.
+ 
+ each char is represented with a width of 6 bytes(leds) and a
+ height of 7 bytes(leds)
+ */
+void LEDcolumns(byte pletter[6],char x)
+{
+  if(x=='!')
+  {
+    pletter[0] = B0000000;
+    pletter[1] = B0000000;
+    pletter[2] = B1111001;
+    pletter[3] = B0000000;
+    pletter[4] = B0000000;
+    pletter[5] = B0000000;
+  }
+
+    .
+
+    .
+
+    .
+
+    .
+
+    .
+
+
+  else
+  {
+    pletter[0] = B0000000;
+    pletter[1] = B0000000;
+    pletter[2] = B0000000;
+    pletter[3] = B0000000;
+    pletter[4] = B0000000;
+    pletter[5] = B0000000;
+  }
+}
+
+//scroll the chars across the matrix
+void scroll()
+{
+  int letterOrigin[message.length()];
+  for(int i=0; i<message.length(); i++)
+  {
+    letterOrigin[i]= (i+(numberOfMAXchips * 8) - 1)+(5*i); //places origin 1+5 spaces after the previous
+  }
+  //keep shifting till the origin of the last letter is -6
+  //this insures that all letters scroll off the matrix
+  while(letterOrigin[message.length()-1] > -6) //while the origin of the last char is greater than the
+    // negative of the width of a char, continue to scroll
+  {
+    for(int x=0; x<message.length(); x++)
+    {
+      for(int y=0; y<6; y++)
+      {
+        if(letterOrigin[x]<8)
+        {
+          lc.setRow(0, letterOrigin[x]+y, LEDMatrix[x][y]);
+        }
+        if((letterOrigin[x]>=3) && (letterOrigin[x]<16))//3 = matrixwidth - char width
+        {
+          lc.setRow(1, letterOrigin[x]-8+y, LEDMatrix[x][y]);
+        }
+        if((letterOrigin[x]>=11) && (letterOrigin[x]<24))//3 = 
+        {
+          lc.setRow(2, letterOrigin[x]-16+y, LEDMatrix[x][y]);
+        }
+        if((letterOrigin[x]>=19) && (letterOrigin[x]<32))//3 = 
+        {
+          lc.setRow(3, letterOrigin[x]-24+y, LEDMatrix[x][y]);
+        }
+      }
+
+    }
+    delay(delaytime);
+    //lc.clearDisplay(0);
+    // lc.clearDisplay(1);
+    // lc.clearDisplay(2);
+    // lc.clearDisplay(3);
+    for(int z=0; z<message.length(); z++)
+    {
+      letterOrigin[z] = (letterOrigin[z] - 1);
+    }
+  }
+}
+```
+
+
+---
+
+# Processing Code #
+
+[Download Code Here](https://rss-infinity-mirror.googlecode.com/files/toInfinityandRSS.rar)
+```
+import processing.serial.*;
+import simpleML.*;
+
+int prvMode; //stores the privious mode
+
+//Different RSS feeds
+String theVerge = "http://www.theverge.com/rss/index.xml";
+String polygon = "http://www.polygon.com/rss/index.xml";
+
+Serial port;
+int mode = 0; //current mode
+int counter = 1; //counter for which heading to display
+String myString = null; //stores the heading
+int lf = 10;    // Linefeed in ASCII
+XMLRequest xmlRequest;
+String[] headlines = {
+  "", "", "", "", "", "", "", "", "", ""
+};
+
+void setup() 
+{
+// change to correct com port(0) which is displayed by the previous line
+  port = new Serial(this, Serial.list()[0], 9600);
+  port.clear();
+  port.bufferUntil('\n');
+
+  // Throw out the first reading, in case we started reading 
+  // in the middle of a string from the sender.
+  myString = port.readStringUntil(lf);
+  myString = null;
+
+  // Creating and starting the request
+  xmlRequest = new XMLRequest(this, theVerge);
+  xmlRequest.makeRequest();
+}
+void draw() 
+{
+  prvMode = mode;
+
+//recives the mode from arduino
+  while (port.available () > 0) 
+  {
+    myString = port.readStringUntil(lf);
+    if (myString != null) 
+    {
+      myString = trim(myString);
+      mode = int(myString);
+    }
+  }
+  if (port.available()<0)
+    mode = -1;
+
+//change the rss feed depending on the mode
+  if (mode == 0 && counter ==0)
+    xmlRequest = new XMLRequest(this, theVerge);
+  else if (mode == 1 && counter ==0)
+    xmlRequest = new XMLRequest(this, polygon);
+
+  //only 62 chars at a time
+  if ((headlines[counter] != null) && (headlines[counter] != ""))
+  {
+    if ((mode == 0) || (mode == 1))
+    {
+      xmlRequest.makeRequest();
+      if (headlines[counter].length() > 59)
+      {
+        println(headlines[counter]);//print headline on the computer
+        port.write("-");
+        //port.write(headlines[counter]);
+        port.write(headlines[counter].substring(0, 60));
+        port.write(headlines[counter].substring(60));
+        port.write("-");
+        //delay when to send next headline
+        delay(int(0.5*(headlines[counter].length()-60))*1000);
+      }
+      else
+      {
+        println(headlines[counter]); //print headline on the computer
+        port.write("-");
+        port.write(headlines[counter]);
+        port.write("-");
+        //delay when to send next headline
+        delay(int(0.5*(headlines[counter].length()))*1000);
+      }
+      counter++; //increment the counter that chooes which headline to diaplay
+      
+      //listen again, if the current mode is not equal to the previous
+      //reset the counter
+      while (port.available () > 0) 
+      {
+        myString = port.readStringUntil(lf);
+        if (myString != null) 
+        {
+          myString = trim(myString);
+          mode = int(myString);
+        }
+      }
+      if (counter >= headlines.length || mode != prvMode)
+        counter = 0;
+    }
+  }
+
+  println(mode); //prints the curront mode on the computer
+}
+
+// When the request is complete
+void netEvent(XMLRequest ml) 
+{
+  // Retrieving an array of all XML elements inside "<title*>" tags
+  headlines = ml.getElementArray("title");
+}
+
+```
